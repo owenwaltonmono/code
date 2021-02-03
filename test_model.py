@@ -1,17 +1,28 @@
+from unittest import TestCase
 from datetime import date, timedelta
 import pytest
 
-# from model import ...
+import attr
+
+from model.model import Batch, OrderLine
 
 today = date.today()
 tomorrow = today + timedelta(days=1)
 later = tomorrow + timedelta(days=10)
 
+
 def test_allocating_to_a_batch_reduces_the_available_quantity():
-    pytest.fail('todo')
+    batch = Batch("batch-001", "SMALL-TABLE", qty=20, eta=date.today())
+    line = OrderLine('order-ref', "SMALL-TABLE", 2)
+    batch.allocate(line)
+    assert 18 == batch.available_quantity
+
 
 def test_can_allocate_if_available_greater_than_required():
-    pytest.fail('todo')
+    with pytest.raises(Exception):
+        batch = Batch("batch-001", "SMALL-TABLE", qty=20, eta=date.today())
+        line = OrderLine('order-ref', "SMALL-TABLE", 22)
+        batch.allocate(line)
 
 def test_cannot_allocate_if_available_smaller_than_required():
     pytest.fail('todo')
