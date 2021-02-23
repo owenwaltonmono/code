@@ -2,6 +2,13 @@ from typing import List, Optional
 from datetime import date, datetime
 from dataclasses import dataclass
 
+"""Exceptions"""
+
+
+class OutOfStock(Exception):
+    pass
+
+
 """ Value objects vs Entities"""
 
 # Value object
@@ -39,6 +46,18 @@ class Batch:
     def __hash__(self):
         return hash(self.reference)
 
+    def __gt__(self, other):
+        """
+        Implementation of the > operator, greater than = gt
+        :param other:
+        :return:
+        """
+        if self.eta is None:
+            return False
+        if other.eta is None:
+            return True
+        return self.eta > other.eta
+
     def allocate(self, line: OrderLine):
         if self.can_allocate(line):
             self._allocations.add(line)
@@ -59,5 +78,10 @@ class Batch:
         return self._purchased_quantity - self.allocated_quantity
 
 
-
-
+def allocate(line: OrderLine, batches: List[Batch]) -> str:
+    try:
+        batch = next(b for b in sorted(batches) if b.can_allocate(line))
+        batch.allocate(line)
+        return batch.reference
+    except StopIteration:
+        raise OutOfStock(f"Out of stock for sku: {line.sku}")
